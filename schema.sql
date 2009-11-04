@@ -4,6 +4,8 @@ CREATE TABLE album_permissions (
     permission TEXT REFERENCES permissions(qname)
 );
 
+CREATE UNIQUE INDEX album_permissions_pk ON album_permissions (album, group, permission);
+
 CREATE TABLE album (
     id SERIAL PRIMARY KEY,
     created TIMESTAMP,
@@ -16,6 +18,7 @@ CREATE FUNCTION add_album(actor TEXT, v_name TEXT, v_public BOOLEAN, v_owner TEX
 $$
 BEGIN
     INSERT INTO album (created, name, public, owner) VALUES (V_NOW(), v_name, v_public, v_owner);
+    INSERT INTO album_permissions (currval("album_id_seq"), "guest", "view");
     PERFORM log(actor, "add_album", album);
     RETURN currval("album_id_seq");
 END;
